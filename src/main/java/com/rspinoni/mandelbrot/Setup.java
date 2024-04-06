@@ -220,7 +220,11 @@ public class Setup {
   }
 
   private void updateZoom(float yoffset) {
-    zoom -= yoffset / 10;
+    if (zoom <= 1f && yoffset > 0 || zoom < 1f && yoffset < 0) {
+      zoom = (float) Math.exp(-1 * ((-1 * Math.log(zoom)) + (yoffset / 10)));
+    } else {
+      zoom -= yoffset / 10;
+    }
   }
 
   private void updatePosition(float xpos, float ypos) {
