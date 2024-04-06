@@ -46,7 +46,6 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
 
-import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -83,8 +82,6 @@ public class Setup {
   Vector4 ranges = new Vector4(0.10f, 0.5f, 0.9f, 1.00f);
 
   public void run() {
-    System.out.println("Hello LWJGL " + Version.getVersion() + "!");
-
     init();
     loop();
 
@@ -210,7 +207,6 @@ public class Setup {
     shader.loadFloat("center_x", center_x);
     shader.loadFloat("center_y", center_y);
     shader.loadVector("color_ranges", ranges);
-    //System.out.println(ranges);
     GL30.glBindVertexArray(mesh.getVaoID());
     GL20.glEnableVertexAttribArray(0);
     GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getVertexCount(), GL11.GL_UNSIGNED_INT,0);
@@ -240,11 +236,6 @@ public class Setup {
 
   private Vector4 findRanges(FloatBuffer pixelData) {
     float[] arrayPixelData = pixelData.array();
-    for (float f : arrayPixelData) {
-      if (f != 0.0f) {
-        System.out.println(f);
-      }
-    }
     Arrays.sort(arrayPixelData);
     int lowest = 0;
     while (arrayPixelData[lowest] == 0.0f && lowest < arrayPixelData.length - 1) {
