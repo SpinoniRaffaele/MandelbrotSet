@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
 import com.rspinoni.mandelbrot.math.Matrix4;
-import com.rspinoni.mandelbrot.math.Vector3;
+import com.rspinoni.mandelbrot.math.Vector4;
 
 public class Shader {
   private int programID;
@@ -64,6 +64,10 @@ public class Shader {
     GL20.glUniform1f(getUniformLocation(uniformName), value);
   }
 
+  public void loadVector(String uniformName, Vector4 vector) {
+    GL20.glUniform4f(getUniformLocation(uniformName), vector.x(), vector.y(), vector.z(), vector.w());
+  }
+
   protected int getUniformLocation(String uniformName) {
     return GL20.glGetUniformLocation(programID, uniformName);
   }
@@ -72,9 +76,7 @@ public class Shader {
     GL20.glBindAttribLocation(programID, attribute, variableName);
   }
 
-  protected void loadVector(int location, Vector3 vector) {
-    GL20.glUniform3f(location, vector.x(), vector.y(), vector.z());
-  }
+
 
   protected void loadBoolean(int location, boolean value) {
     float tovec = 0;

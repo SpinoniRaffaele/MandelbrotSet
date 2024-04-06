@@ -33,13 +33,18 @@ import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_COMPONENT;
+import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glReadPixels;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 import java.awt.*;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Arrays;
 
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -50,6 +55,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
+import com.rspinoni.mandelbrot.math.Vector4;
 import com.rspinoni.mandelbrot.render.Mesh;
 import com.rspinoni.mandelbrot.render.MeshLoader;
 import com.rspinoni.mandelbrot.render.shader.Shader;
@@ -73,6 +79,8 @@ public class Setup {
   private int width;
 
   boolean mousePressed = false;
+
+  Vector4 ranges = new Vector4(0.10f, 0.5f, 0.9f, 1.00f);
 
   public void run() {
     System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -183,7 +191,6 @@ public class Setup {
     });
     glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
       if (mousePressed) {
-        System.out.println("xpos: " + xpos + " ypos: " + ypos);
         updatePosition((float) xpos, (float) ypos);
       }
     });
@@ -193,27 +200,27 @@ public class Setup {
     // Run the rendering loop until the user has attempted to close
     // the window or has pressed the ESCAPE key.
     while ( !glfwWindowShouldClose(window) ) {
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-
       render(mesh, shader);
-
-      glfwSwapBuffers(window); // swap the color buffers
-
-      // Poll for window events. The key callback above will only be
-      // invoked during this call.
-      glfwPollEvents();
     }
   }
 
   public void render(Mesh mesh, Shader shader) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
     shader.loadFloat("zoom", zoom);
     shader.loadFloat("center_x", center_x);
     shader.loadFloat("center_y", center_y);
+    shader.loadVector("color_ranges", ranges);
+    //System.out.println(ranges);
     GL30.glBindVertexArray(mesh.getVaoID());
     GL20.glEnableVertexAttribArray(0);
     GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getVertexCount(), GL11.GL_UNSIGNED_INT,0);
     GL20.glDisableVertexAttribArray(0);
     GL30.glBindVertexArray(0);
+    FloatBuffer pixel_data = FloatBuffer.allocate(width * height);
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+    glReadPixels(0, 0, width, height, GL_DEPTH_COMPONENT, GL_FLOAT, pixel_data);
+    ranges = findRanges(pixel_data);
   }
 
   private void updateZoom(float yoffset) {
@@ -229,5 +236,26 @@ public class Setup {
     center_y += (ypos - initial_y) / (1000 / zoom);
     initial_x = xpos;
     initial_y = ypos;
+  }
+
+  private Vector4 findRanges(FloatBuffer pixelData) {
+    float[] arrayPixelData = pixelData.array();
+    for (float f : arrayPixelData) {
+      if (f != 0.0f) {
+        System.out.println(f);
+      }
+    }
+    Arrays.sort(arrayPixelData);
+    int lowest = 0;
+    while (arrayPixelData[lowest] == 0.0f && lowest < arrayPixelData.length - 1) {
+      lowest++;
+    }
+    int length = arrayPixelData.length - lowest;
+    return lowest < arrayPixelData.length - 1  ? new Vector4(
+        arrayPixelData[lowest],
+        arrayPixelData[lowest + length * 3 / 4 - 1],
+        arrayPixelData[lowest + length * 7 / 8 - 1],
+        arrayPixelData[arrayPixelData.length - 1]
+    ) : ranges;
   }
 }

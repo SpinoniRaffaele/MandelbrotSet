@@ -77,14 +77,14 @@ public class Matrix4 {
     return this;
   }
 
-  public Matrix4 putColumn3(int index, Vector3 v) {
+  public Matrix4 putColumn3(int index, Vector4 v) {
     put(index, 0, v.x());
     put(index, 1, v.y());
     put(index, 2, v.z());
     return this;
   }
 
-  public Matrix4 putColumn(int index, Vector3 v, float w) {
+  public Matrix4 putColumn(int index, Vector4 v, float w) {
     put(index, 0, v.x());
     put(index, 1, v.y());
     put(index, 2, v.z());
@@ -183,7 +183,7 @@ public class Matrix4 {
     return mult(temp);
   }
 
-  public Matrix4 translate(Vector3 vec) {
+  public Matrix4 translate(Vector4 vec) {
     return translate(vec.x(), vec.y(), vec.z());
   }
 
@@ -202,7 +202,7 @@ public class Matrix4 {
     return mult(temp);
   }
 
-  public Matrix4 scale(Vector3 vec) {
+  public Matrix4 scale(Vector4 vec) {
     return scale(vec.x(), vec.y(), vec.z());
   }
 
@@ -235,7 +235,7 @@ public class Matrix4 {
     return mult(temp);
   }
 
-  public Matrix4 rotate(float angle, Vector3 vec) {
+  public Matrix4 rotate(float angle, Vector4 vec) {
     return rotate(angle, vec.x(), vec.y(), vec.z());
   }
 
@@ -243,7 +243,7 @@ public class Matrix4 {
     return rotate((float)Math.toRadians(angle), x, y, z);
   }
 
-  public Matrix4 rotateDeg(float angle, Vector3 vec) {
+  public Matrix4 rotateDeg(float angle, Vector4 vec) {
     return rotate((float)Math.toRadians(angle), vec);
   }
 

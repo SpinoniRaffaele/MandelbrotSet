@@ -8,7 +8,10 @@ in vec4 gl_FragCoord;
 
 out vec4 frag_color;
 
-#define MAX_ITERATIONS 1000
+out float gl_FragDepth;
+uniform vec4 color_ranges;
+
+#define MAX_ITERATIONS 50
 
 int get_iterations()
 {
@@ -45,7 +48,29 @@ vec4 return_color()
     }
 
     float iterations = float(iter) / MAX_ITERATIONS;
-    return vec4(0.0f, iterations, 0.0f, 1.0f);
+    gl_FragDepth = iterations;
+
+    vec4 color_0 = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    vec4 color_1 = vec4(0.0f, 0.2f, 0.5f, 1.0f);
+    vec4 color_2 = vec4(1.0f, 0.8f, 0.0f, 1.0f);
+    vec4 color_3 = vec4(1.0f, 0.0f, 0.4f, 1.0f);
+
+    float fraction = 0.0f;
+    if (iterations < color_ranges[1])
+    {
+        fraction = (iterations - color_ranges[0]) / (color_ranges[1] - color_ranges[0]);
+        return mix(color_0, color_1, fraction);
+    }
+    else if(iterations < color_ranges[2])
+    {
+        fraction = (iterations - color_ranges[1]) / (color_ranges[2] - color_ranges[1]);
+        return mix(color_1, color_2, fraction);
+    }
+    else
+    {
+        fraction = (iterations - color_ranges[2]) / (color_ranges[3] - color_ranges[2]);
+        return mix(color_2, color_3, fraction);
+    }
 }
 
 void main()
