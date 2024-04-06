@@ -12,8 +12,8 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
 public class MeshLoader {
-  private static List<Integer> vaos = new ArrayList<Integer>();
-  private static List<Integer> vbos = new ArrayList<Integer>();
+  private static List<Integer> vaos = new ArrayList<>();
+  private static List<Integer> vbos = new ArrayList<>();
 
   public static Mesh createMesh(float[] positions, int[] indices) {
     int vao = genVAO();
@@ -38,13 +38,13 @@ public class MeshLoader {
   }
 
   private static void storeData(int attribute, int dimensions, float[] data) {
-    int vbo = GL15.glGenBuffers(); //Creates a VBO ID
+    int vbo = GL15.glGenBuffers();
     vbos.add(vbo);
-    GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo); //Loads the current VBO to store the data
+    GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
     FloatBuffer buffer = createFloatBuffer(data);
     GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW);
     GL20.glVertexAttribPointer(attribute, dimensions, GL11.GL_FLOAT, false, 0, 0);
-    GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0); //Unloads the current VBO when done.
+    GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
   }
 
   private static void bindIndices(int[] data) {
