@@ -15,8 +15,8 @@ uniform vec4 color_ranges;
 
 int get_iterations()
 {
-    float real = ((gl_FragCoord.x / 1080.0 - 0.5) * zoom + center_x) * 2.0;
-    float imag = ((gl_FragCoord.y / 1080.0 - 0.5) * zoom + center_y) * 2.0;
+    float real = ((gl_FragCoord.x / 1000 - 0.5) * zoom + center_x) * 2.0;
+    float imag = ((gl_FragCoord.y / 1000 - 0.5) * zoom + center_y) * 2.0;
 
     int iterations = 0;
     float const_real = real;

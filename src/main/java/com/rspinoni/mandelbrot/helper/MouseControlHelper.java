@@ -17,7 +17,7 @@ public class MouseControlHelper {
 
   private float zoom = 1.0f;
 
-  private float center_x = 0.0f;
+  private float center_x = -0.5f;
 
   private float center_y = 0.0f;
 
