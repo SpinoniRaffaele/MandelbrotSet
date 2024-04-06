@@ -1,4 +1,4 @@
-package org.example;
+package com.rspinoni.mandelbrot;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
@@ -33,13 +33,21 @@ import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+import java.awt.*;
 import java.nio.IntBuffer;
 
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
+
+import com.rspinoni.mandelbrot.render.Mesh;
+import com.rspinoni.mandelbrot.render.MeshLoader;
+import com.rspinoni.mandelbrot.render.shader.Shader;
 
 public class Setup {
   // The window handle
@@ -61,6 +69,11 @@ public class Setup {
   }
 
   private void init() {
+
+    GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+    int width = gd.getDisplayMode().getWidth();
+    int height = gd.getDisplayMode().getHeight();
+
     // Setup an error callback. The default implementation
     // will print the error message in System.err.
     GLFWErrorCallback.createPrint(System.err).set();
@@ -75,7 +88,7 @@ public class Setup {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 
     // Create the window
-    window = glfwCreateWindow(300, 300, "Hello World!", NULL, NULL);
+    window = glfwCreateWindow(width, height, "Mandelbrot Visualizer", NULL, NULL);
     if ( window == NULL )
       throw new RuntimeException("Failed to create the GLFW window");
 
@@ -121,13 +134,28 @@ public class Setup {
     // bindings available for use.
     GL.createCapabilities();
 
+    float[] vertices = {
+        -1.0f, -1.0f, -0.0f,
+        1.0f,  1.0f, -0.0f,
+        -1.0f,  1.0f, -0.0f,
+        1.0f, -1.0f, -0.0f
+    };
+    int[] indices = {
+        0, 1, 2,
+        0, 3, 1
+    };
+    Mesh mesh = MeshLoader.createMesh(vertices,indices);
+
+    Shader shader = new Shader("mandelbrot.vert", "mandelbrot.frag");
     // Set the clear color
-    glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     // Run the rendering loop until the user has attempted to close
     // the window or has pressed the ESCAPE key.
     while ( !glfwWindowShouldClose(window) ) {
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+
+      render(mesh, shader);
 
       glfwSwapBuffers(window); // swap the color buffers
 
@@ -135,5 +163,14 @@ public class Setup {
       // invoked during this call.
       glfwPollEvents();
     }
+  }
+
+  public void render(Mesh mesh, Shader shader) {
+    shader.start();
+    GL30.glBindVertexArray(mesh.getVaoID());
+    GL20.glEnableVertexAttribArray(0);
+    GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getVertexCount(), GL11.GL_UNSIGNED_INT,0);
+    GL20.glDisableVertexAttribArray(0);
+    GL30.glBindVertexArray(0);
   }
 }

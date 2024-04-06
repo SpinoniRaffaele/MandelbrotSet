@@ -3,9 +3,13 @@ package com.rspinoni.mandelbrot.render.shader;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.FloatBuffer;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
+
+import com.rspinoni.mandelbrot.math.Matrix4;
+import com.rspinoni.mandelbrot.math.Vector3;
 
 public class Shader {
   private int programID;
@@ -55,7 +59,33 @@ public class Shader {
     }
     return ID;
   }
+
+  public void loadFloat(String uniformName, float value) {
+    GL20.glUniform1f(getUniformLocation(uniformName), value);
+  }
+
+  protected int getUniformLocation(String uniformName) {
+    return GL20.glGetUniformLocation(programID, uniformName);
+  }
+
   protected void bindAttribute(int attribute, String variableName) {
     GL20.glBindAttribLocation(programID, attribute, variableName);
+  }
+
+  protected void loadVector(int location, Vector3 vector) {
+    GL20.glUniform3f(location, vector.x(), vector.y(), vector.z());
+  }
+
+  protected void loadBoolean(int location, boolean value) {
+    float tovec = 0;
+    if(value) {
+      tovec = 1;
+    }
+    GL20.glUniform1f(location, tovec);
+  }
+
+  protected void loadMatrix(int location, Matrix4 value) {
+    FloatBuffer buffer = value.toBuffer();
+    GL20.glUniformMatrix4fv(location, false, buffer);
   }
 }

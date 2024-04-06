@@ -1,4 +1,4 @@
-package org.example;
+package com.rspinoni.mandelbrot;
 
 public class Main {
 
