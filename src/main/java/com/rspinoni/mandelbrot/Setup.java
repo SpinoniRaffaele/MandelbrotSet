@@ -3,6 +3,8 @@ package com.rspinoni.mandelbrot;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
 import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
@@ -16,8 +18,11 @@ import static org.lwjgl.glfw.GLFW.glfwGetWindowSize;
 import static org.lwjgl.glfw.GLFW.glfwInit;
 import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwSetCursorPosCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetMouseButtonCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetScrollCallback;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 import static org.lwjgl.glfw.GLFW.glfwShowWindow;
@@ -53,6 +58,22 @@ public class Setup {
   // The window handle
   private long window;
 
+  private float zoom = 1.0f;
+
+  private float center_x = 0.0f;
+
+  private float center_y = 0.0f;
+
+  private float initial_x = 0.0f;
+
+  private float initial_y = 0.0f;
+
+  private int height;
+
+  private int width;
+
+  boolean mousePressed = false;
+
   public void run() {
     System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
@@ -71,8 +92,8 @@ public class Setup {
   private void init() {
 
     GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-    int width = gd.getDisplayMode().getWidth();
-    int height = gd.getDisplayMode().getHeight();
+    width = gd.getDisplayMode().getWidth();
+    height = gd.getDisplayMode().getHeight();
 
     // Setup an error callback. The default implementation
     // will print the error message in System.err.
@@ -145,8 +166,27 @@ public class Setup {
         0, 3, 1
     };
     Mesh mesh = MeshLoader.createMesh(vertices,indices);
-
     Shader shader = new Shader("mandelbrot.vert", "mandelbrot.frag");
+    shader.start();
+    glfwSetScrollCallback(window, (window, xoffset, yoffset) -> {
+      updateZoom((float) yoffset);
+    });
+    glfwSetMouseButtonCallback(window, (window, button, action, mods) -> {
+      if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        mousePressed = true;
+      }
+      if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+        mousePressed = false;
+        initial_x = 0.0f;
+        initial_y = 0.0f;
+      }
+    });
+    glfwSetCursorPosCallback(window, (window, xpos, ypos) -> {
+      if (mousePressed) {
+        System.out.println("xpos: " + xpos + " ypos: " + ypos);
+        updatePosition((float) xpos, (float) ypos);
+      }
+    });
     // Set the clear color
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -166,11 +206,28 @@ public class Setup {
   }
 
   public void render(Mesh mesh, Shader shader) {
-    shader.start();
+    shader.loadFloat("zoom", zoom);
+    shader.loadFloat("center_x", center_x);
+    shader.loadFloat("center_y", center_y);
     GL30.glBindVertexArray(mesh.getVaoID());
     GL20.glEnableVertexAttribArray(0);
     GL11.glDrawElements(GL11.GL_TRIANGLES, mesh.getVertexCount(), GL11.GL_UNSIGNED_INT,0);
     GL20.glDisableVertexAttribArray(0);
     GL30.glBindVertexArray(0);
+  }
+
+  private void updateZoom(float yoffset) {
+    zoom -= yoffset / 10;
+  }
+
+  private void updatePosition(float xpos, float ypos) {
+    if (initial_x == 0.0f && initial_y == 0.0f) {
+      initial_x = xpos;
+      initial_y = ypos;
+    }
+    center_x -= (xpos - initial_x) / (1000 / zoom);
+    center_y += (ypos - initial_y) / (1000 / zoom);
+    initial_x = xpos;
+    initial_y = ypos;
   }
 }

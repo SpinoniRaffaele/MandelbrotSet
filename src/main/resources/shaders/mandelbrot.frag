@@ -1,5 +1,9 @@
 #version 330 core
 
+uniform float zoom;
+uniform float center_x;
+uniform float center_y;
+
 in vec4 gl_FragCoord;
 
 out vec4 frag_color;
@@ -8,8 +12,8 @@ out vec4 frag_color;
 
 int get_iterations()
 {
-    float real = ((gl_FragCoord.x / 1080.0 - 0.5)) * 2.0;
-    float imag = ((gl_FragCoord.y / 1080.0 - 0.5)) * 2.0;
+    float real = ((gl_FragCoord.x / 1080.0 - 0.5) * zoom + center_x) * 2.0;
+    float imag = ((gl_FragCoord.y / 1080.0 - 0.5) * zoom + center_y) * 2.0;
 
     int iterations = 0;
     float const_real = real;
